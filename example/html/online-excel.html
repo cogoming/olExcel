@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>online-excel handsontable</title>
+    <script data-jsfiddle="common" src="../js/handsontable.full.js"></script>
+    <script data-jsfiddle="common" src="../js/languages.min.js"></script>
+    <link type="text/css" rel="stylesheet" href="../css/handsontable.full.min.css">
+</head>
+<body>
+<div id="sheetone" class="hot handsontable htRowHeaders htColumnHeaders"></div>
+</body>
+<script type="text/javascript">
+    document.addEventListener("DOMContentLoaded", function() {
+        //自定义数据 json对象数组类型
+        function getData() {
+            return [
+                {item: '项目', lastPhase: '2017年9月末', lastOneYears: '2016年末(￥)', lastTwoYears: '2015年末(￥)',lastThreeYears:'2014年末(￥)'},
+                {item: '流动资产', lastPhase: '', lastOneYears: '', lastTwoYears: '',lastThreeYears:''},
+                {item: '货币资金', lastPhase: 56416.54, lastOneYears: 51813.60, lastTwoYears: 39822.35,lastThreeYears:42469.45},
+                {item: '结算备付金', lastPhase: 0, lastOneYears:0 , lastTwoYears:0,lastThreeYears:0},
+                {item: '拆出资金', lastPhase: 0, lastOneYears:0 , lastTwoYears:0,lastThreeYears:0},
+                {item: '以公允价值计量且其变动计入当期损益的金融资产', lastPhase: 0, lastOneYears:0 , lastTwoYears:0,lastThreeYears:0},
+                {item: '衍生金融资产', lastPhase: 0, lastOneYears:0 , lastTwoYears:0,lastThreeYears:0},
+                {item: '应收票据', lastPhase: 0, lastOneYears:0 , lastTwoYears:0,lastThreeYears:0},
+                {item: '应收账款', lastPhase: 64338.25, lastOneYears: 26209.14, lastTwoYears: 11985.35,lastThreeYears:8760.08},
+                {item: '预付款项', lastPhase: 154718.42, lastOneYears: 112035.52, lastTwoYears: 69216.27,lastThreeYears:11794.70},
+                {item: '应收利息', lastPhase: 0, lastOneYears: 15.17, lastTwoYears: 259.02,lastThreeYears:163.96},
+                {item: '他应收款', lastPhase: 152509.07, lastOneYears: 59011.32, lastTwoYears: 75982.75,lastThreeYears:50785.89},
+                {item: '存货', lastPhase: 905520.67, lastOneYears: 851262.32, lastTwoYears: 489104.35,lastThreeYears:401861.67},
+            ];
+        }
+        //声明表格对象、设置对象、
+        var sheetone = document.getElementById('sheetone'),
+            settings1,hot1;
+        //自定义第一行样式
+        function firstRowRenderer(instance, td, row, col, prop, value, cellProperties) {
+            Handsontable.renderers.TextRenderer.apply(this, arguments);
+            td.style.fontWeight = 'bold';
+            td.style.color = 'green';
+            td.style.background = '#CEC';
+        }
+
+        // 自定义列设置
+        var columnSetting = [
+            {
+                data: 'item',
+                type:'text'
+                // 1nd column is simple text, no special options here
+            },
+            {
+                data: 'lastPhase',
+                type: 'numeric',
+                format: '0,0.00$',
+                language: 'zh-CN',
+                allowEmpty: false
+            },
+            {
+                data: 'lastOneYears',
+                type: 'numeric',
+                format: '0,0.00 $',
+                language: 'zh-CN',
+            },
+            {
+                data: 'lastTwoYears',
+                type: 'numeric',
+                format: '0,0.00 $',
+                language: 'zh-CN',
+            },
+            {
+                data: 'lastThreeYears',
+                type: 'numeric',
+                format: '0,0.00 $',
+                language: 'zh-CN',
+            }
+        ];
+        //自定义右键菜单
+        var contextMenuSetting = {
+
+            items: {
+                "row_above": {
+                    name: "插入整行",
+                    disabled: function () {
+                        //if first row, disable this option
+                        return (hot1.getSelected() && hot1.getSelected()[0] === 0)
+                    }
+                },
+                "col_right": {
+                    name: "插入整列",
+                    disabled: function () {
+                        //if first row enable this option
+                        return (hot1.getSelected() && hot1.getSelected()[0] !== 0)
+                    }
+                },
+
+                "hsep1": "---------",
+                "remove_row": {
+                    name: '删除整行',
+                    disabled: function () {
+                        //if first col, enable this option
+                        return (hot1.getSelected() && hot1.getSelected()[0] === 0)
+                    }
+                },
+                /*"remove_col": {
+                    name: '删除整列',
+                    /!*disabled: function () {
+                     //if first row, eable this option
+                     return (hot1.getSelected() && hot1.getSelected()[0] !== 0)
+                     }*!/
+                },*/
+                "clear_column": {name: '清除列内容'},
+                "hsep2": "---------",
+                "alignment":{
+                    name:"对齐",
+                },
+                "undo": {
+                    name: "撤销",
+                    disabled:function(){
+                        return false;
+                    }
+                },
+                "make_read_only": {name: "只读"},
+                "hsep3": "---------",
+
+            }
+        };
+        //自定义列数据值，表头只读，渲染首页样式
+        var cellProperties = function (row, col, prop) {
+            var cellProperties = {};
+            if (row === 0 || this.instance.getData()[row][col] === 'readOnly') {
+                cellProperties.readOnly = true; // make cell read-only if it is first row or the text reads 'readOnly'
+            }
+            if (row === 0) {
+                cellProperties.renderer = firstRowRenderer; // uses function directly
+                cellProperties.className = 'htCenter';// options htCenter htRight htLeft
+            }
+
+            return cellProperties;
+        }
+        //自定义表格设置信息
+        settings1 = {
+            data: getData(),
+            rowHeaders: true,
+            colHeaders: true,
+            colWidths: [55, 47, 47, 47, 47, 47, 47],
+            stretchH: 'all',
+            contextMenu: contextMenuSetting,
+            columns:columnSetting,
+            cells: cellProperties
+        };
+        hot1 = new Handsontable(sheetone, settings1);
+
+
+
+
+    });
+</script>
+</html>
